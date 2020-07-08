@@ -10,6 +10,8 @@ bool checkMatch(string s1, string s2, int i1, int i2);
 int solveAlignment(string s1, string s2);
 
 int main() {
+    // Testing:
+
     string s1 = "ACGCCG";
     string s2 = "ACCACG";
 
@@ -20,44 +22,55 @@ int main() {
     return 0;
 }
 
+
+// Wrapper function to return score of optimal path:
 int solveAlignment(string s1, string s2){
     vector<vector<int>> DPTable = doSolveAlignment(s1, s2);
     // Return optimal value
     return DPTable[s1.length()][s2.length()];
 }
 
+// Find score of optimal path via DP:
 vector<vector<int>> doSolveAlignment(string s1, string s2) {
-    // Declare table of best alignments
+    // Declare table of best alignments, penalties, etc.
     const int MATCH = 2;
     const int PENALTY = -1;
 
+    // Creates DP table of appropriate size with extra row for alignments against empty strings (values pre-initialized):
     vector<vector<int>> table = initialize_DPT(s1.length(), s2.length(), PENALTY);
-    //if (checkMatch(s1, s2, 0, 0)) table[0][0] = MATCH;
-    //else table[0][0] = PENALTY;
-    int countPaths = 0;
 
+    int countPaths = 0;
     const size_t matrix_rows = table.size();
     const size_t matrix_cols = table[0].size();
 
-    for (int i = 1; i < matrix_rows; i++){
-        for (int j = 1; j < matrix_cols; j++){
+    // Fill table with optimal values from initialized values:
+    for (int row = 1; row < matrix_rows; row++){
+        for (int col = 1; col < matrix_cols; col++){
+            // Initialize possible additions:
             int diag = PENALTY;
             int down = PENALTY;
             int right = PENALTY;
-            if (checkMatch(s1, s2, i, j)) diag = MATCH;
-            diag += table[i - 1][j - 1];
-            down += table[i - 1][j];
-            right += table[i][j - 1];
 
+            // If there is a match, it will only be on the diagonal, so update if applicable:
+            if (checkMatch(s1, s2, row, col)) diag = MATCH;
+
+            // Add to best scores of previous alignments:
+            diag += table[row - 1][col - 1];
+            down += table[row - 1][col];
+            right += table[row][col - 1];
+
+            // Find the best score for the alignment at this cell:
             int opt_value = max({diag, down, right});
 
+            // TODO: Count number of optimal paths
             if ((diag == opt_value && down == opt_value) ||
                 (diag == opt_value && right == opt_value) ||
                 (down == opt_value && right == opt_value)) {
                 countPaths++;
             }
 
-            table[i][j] = opt_value;
+            // Insert the score to the table:
+            table[row][col] = opt_value;
         }
     }
     cout << to_string(countPaths + 1) + "\n";
@@ -66,6 +79,10 @@ vector<vector<int>> doSolveAlignment(string s1, string s2) {
 
 
 vector<vector<int>> initialize_DPT(size_t l1, size_t l2, const int penalty){
+
+    // Initializes matrix for alignment. Conditionals check length of strings and fill arrays properly for
+    // given lengths.
+
     size_t first_array_len = l1 + 1;
     size_t secnd_array_len = l2 + 1;
 
@@ -86,6 +103,7 @@ vector<vector<int>> initialize_DPT(size_t l1, size_t l2, const int penalty){
 }
 
 bool checkMatch(string s1, string s2, int i1, int i2) {
+    // Return true if the characters at two indices are the same, false if otherwise
     char check1 = s1[i1];
     char check2 = s2[i2];
     return !(check1 - check2);
