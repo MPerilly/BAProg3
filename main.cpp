@@ -9,7 +9,7 @@ const long MATCH = 2;
 const long PENALTY = -1;
 
 long MOD(long l);
-long countPaths(vector<vector<long>> dp, vector<vector<long>> num_paths, long i, long j, string s1, string s2);
+long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2);
 vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table);
 vector<vector<long>> initialize_DPT(size_t l1, size_t l2, const long penalty);
 bool checkMatch(string s1, string s2, long i1, long i2);
@@ -50,7 +50,7 @@ long solveAlignment(string s1, string s2){
     return DPTable[s1.length()][s2.length()];
 }
 
-long countPaths(vector<vector<long>> dp, vector<vector<long>> num_paths, long i, long j, string s1, string s2) {
+long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2) {
     if (i == 0 && j == 0) return 1;
     if (i == 0 || j == 0) return 0;
 
