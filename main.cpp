@@ -81,30 +81,6 @@ long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long 
 }
 
 
-
-   /* if (i == 0 && j == 0) return 1;
-    if (i == 0 || j == 0) return 0;
-
-    long a1 = dp[i - 1][j] + PENALTY;
-    long a2 = dp[i][j - 1] + PENALTY;
-    long a3;
-    if (checkMatch(s1, s2, i - 1, j - 1)) a3 = dp[i - 1][j - 1] + MATCH;
-    else a3 = dp[i - 1][j - 1] + PENALTY;
-    if (dp[i][j] == a1) {
-        long value = countPaths(dp, num_paths, i - 1, j, s1, s2);
-        num_paths[i][j] += MOD(value);
-    }
-    if (dp[i][j] == a2) {
-        long value = countPaths(dp, num_paths, i, j - 1, s1, s2);
-        num_paths[i][j] += MOD(value);
-    }
-    if (dp[i][j] == a3) {
-        long value = countPaths(dp, num_paths, i - 1, j - 1, s1, s2);
-        num_paths[i][j] += MOD(value);
-    }
-    return num_paths[i][j];
-}*/
-
 // Find score of optimal path via DP:
 vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table) {
 
