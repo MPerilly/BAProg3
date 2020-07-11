@@ -76,8 +76,8 @@ long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long 
                 traceback[row][col] = MOD(value);
             }
         }
-        return traceback[i][j];
     }
+    return traceback[i][j];
 }
 
 
