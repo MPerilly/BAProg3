@@ -8,7 +8,8 @@ using namespace std;
 const int MATCH = 2;
 const int PENALTY = -1;
 
-int countPaths(vector<vector<string>> dp_trace, size_t i, size_t j);
+long MOD(long l);
+long countPaths(vector<vector<string>> dp_trace, size_t i, size_t j);
 vector<vector<int>> doSolveAlignment(string s1, string s2);
 vector<vector<int>> initialize_DPT(size_t l1, size_t l2, const int penalty);
 bool checkMatch(string s1, string s2, int i1, int i2);
@@ -30,6 +31,17 @@ int main() {
     return 0;
 }
 
+long MOD(long l){
+    long check_large = 1000000009;
+    if ((l >= check_large) | (l < 0)){
+        long out = (l % check_large);
+        if (out < 0){
+            return ((out + check_large) % check_large);
+        }
+        return out;
+    }
+    return l;
+}
 
 // Wrapper function to return score of optimal path:
 int solveAlignment(string s1, string s2){
@@ -38,21 +50,21 @@ int solveAlignment(string s1, string s2){
     return DPTable[s1.length()][s2.length()];
 }
 
-int countPaths(vector<vector<string>> dp_trace, size_t i, size_t j) {
-    int num_paths = 0;
+long countPaths(vector<vector<string>> dp_trace, size_t i, size_t j) {
+    long num_paths = 0;
     if (i == 0 && j == 0) return 1;
     // else if (i == 0 || j == 0) return 0;
     else {
         string optimal = dp_trace[i][j];
         for (int char_at_ind = 0; char_at_ind < optimal.size(); char_at_ind++){
-            if (optimal[char_at_ind] == 'd') num_paths += countPaths(dp_trace, i - 1, j - 1);
-            if (optimal[char_at_ind] == 'u') num_paths += countPaths(dp_trace, i - 1, j);
-            if (optimal[char_at_ind] == 'l') num_paths += countPaths(dp_trace, i, j - 1);
+            if (optimal[char_at_ind] == 'd') MOD(num_paths += countPaths(dp_trace, i - 1, j - 1));
+            if (optimal[char_at_ind] == 'u') MOD(num_paths += countPaths(dp_trace, i - 1, j));
+            if (optimal[char_at_ind] == 'l') MOD(num_paths += countPaths(dp_trace, i, j - 1));
         }
 
     }
 
-    return num_paths;
+    return MOD(num_paths);
 
 }
 
