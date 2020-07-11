@@ -51,33 +51,52 @@ long solveAlignment(string s1, string s2){
 }
 
 long countPaths(vector<vector<long>>& dp, long i, long j, string& s1, string& s2) {
+    // Initialize DP table for counting paths:
+    vector<vector<long>> traceback(dp.size() - 1, vector<long>(dp[0].size() - 1, 0));
+    long row_matches = 0;
+    long col_matches = 0;
+    for (long row_col_init = 0; row_col_init < traceback.size(); row_col_init++) {
+        traceback[row_col_init][0] = 1;
+        traceback[0][row_col_init] = 1;
+        if (checkMatch(s1, s2, 0, row_col_init)){
+            row_matches = MOD(row_matches + 1);
+            traceback[0][row_col_init] = MOD(row_matches);
+        }
+        if (checkMatch(s1, s2, row_col_init, 0)){
+            col_matches = MOD(col_matches + 1);
+            traceback[row_col_init][0] = MOD(col_matches);
+        }
+    }
 
-    vector<vector<long>> traceback(dp.size(), vector<long>(dp[0].size(), 0));
-    traceback[0][0] = 1;
-
-    for (long row = 1; row < i + 1; row++) {
-        for (long col = 1; col < j + 1; col++) {
-            long a1 = dp[row - 1][col] + PENALTY;
-            long a2 = dp[row][col - 1] + PENALTY;
+    for (long row = 1; row < i; row++) {
+        for (long col = 1; col < j; col++) {
+            // Find optimal values coming from each possible cell:
+            long dp_r_ind = row + 1;
+            long dp_c_ind = col + 1;
+            long a1 = dp[dp_r_ind - 1][dp_c_ind] + PENALTY;
+            long a2 = dp[dp_r_ind][dp_c_ind - 1] + PENALTY;
             long a3;
-            if (checkMatch(s1, s2, row - 1, col - 1)) a3 = dp[row - 1][col - 1] + MATCH;
-            else a3 = dp[row - 1][col - 1] + PENALTY;
+            if (checkMatch(s1, s2, row - 1, col - 1)) a3 = dp[dp_r_ind - 1][dp_c_ind - 1] + MATCH;
+            else a3 = dp[dp_r_ind - 1][dp_c_ind - 1] + PENALTY;
 
-            if (dp[row][col] == a1) {
+            // If it matches, then the optimal paths come from the respective direction,
+            // so increment appropriately:
+            if (dp[dp_r_ind][dp_c_ind] == a1) {
                 long value = traceback[row][col] + traceback[row - 1][col];
                 traceback[row][col] = MOD(value);
             }
-            if (dp[row][col] == a2) {
+            if (dp[dp_r_ind][dp_c_ind] == a2) {
                 long value = traceback[row][col] + traceback[row][col - 1];
                 traceback[row][col] = MOD(value);
             }
-            if (dp[row][col] == a3) {
+            if (dp[dp_r_ind][dp_c_ind] == a3) {
                 long value = traceback[row][col] + traceback[row - 1][col - 1];
                 traceback[row][col] = MOD(value);
             }
         }
     }
-    return traceback[i][j];
+    // Return number of optimal paths from start to end:
+    return traceback[i - 1][j - 1];
 }
 
 
