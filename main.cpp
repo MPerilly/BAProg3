@@ -51,7 +51,38 @@ long solveAlignment(string s1, string s2){
 }
 
 long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2) {
-    if (i == 0 && j == 0) return 1;
+
+    vector<vector<long>> traceback(dp.size(), vector<long>(dp[0].size(), 0));
+    traceback[0][0] = 1;
+
+    for (long row = 1; row < i + 1; row++) {
+        for (long col = 1; col < j + 1; col++) {
+            long a1 = dp[row - 1][col] + PENALTY;
+            long a2 = dp[row][col - 1] + PENALTY;
+            long a3;
+            if (checkMatch(s1, s2, row - 1, col - 1)) a3 = dp[row - 1][col - 1] + MATCH;
+            else a3 = dp[row - 1][col - 1] + PENALTY;
+
+            if (dp[row][col] == a1) {
+                long value = traceback[row][col] + traceback[row - 1][col];
+                traceback[row][col] = MOD(value);
+            }
+            if (dp[row][col] == a2) {
+                long value = traceback[row][col] + traceback[row][col - 1];
+                traceback[row][col] = MOD(value);
+            }
+            if (dp[row][col] == a3) {
+                long value = traceback[row][col] + traceback[row - 1][col - 1];
+                traceback[row][col] = MOD(value);
+            }
+        }
+        return traceback[i][j];
+    }
+}
+
+
+
+   /* if (i == 0 && j == 0) return 1;
     if (i == 0 || j == 0) return 0;
 
     long a1 = dp[i - 1][j] + PENALTY;
@@ -72,7 +103,7 @@ long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long 
         num_paths[i][j] += MOD(value);
     }
     return num_paths[i][j];
-}
+}*/
 
 // Find score of optimal path via DP:
 vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table) {
