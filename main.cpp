@@ -10,7 +10,7 @@ const long PENALTY = -1;
 
 long MOD(long l);
 long countPaths(vector<vector<long>> dp, vector<vector<long>> num_paths, long i, long j, string s1, string s2);
-vector<vector<long>> doSolveAlignment(string s1, string s2);
+vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table);
 vector<vector<long>> initialize_DPT(size_t l1, size_t l2, const long penalty);
 bool checkMatch(string s1, string s2, long i1, long i2);
 long solveAlignment(string s1, string s2);
@@ -43,7 +43,9 @@ long MOD(long l){
 
 // Wrapper function to return score of optimal path:
 long solveAlignment(string s1, string s2){
-    vector<vector<long>> DPTable = doSolveAlignment(s1, s2);
+    // Creates DP table of appropriate size with extra row for alignments against empty strings (values pre-initialized):
+    static vector<vector<long>> DPTable = initialize_DPT(s1.length(), s2.length(), PENALTY);
+    DPTable = doSolveAlignment(s1, s2, DPTable);
     // Return optimal value
     return DPTable[s1.length()][s2.length()];
 }
@@ -58,22 +60,22 @@ long countPaths(vector<vector<long>> dp, vector<vector<long>> num_paths, long i,
     if (checkMatch(s1, s2, i - 1, j - 1)) a3 = dp[i - 1][j - 1] + MATCH;
     else a3 = dp[i - 1][j - 1] + PENALTY;
     if (dp[i][j] == a1) {
-        num_paths[i][j] += MOD(countPaths(dp, num_paths, i - 1, j, s1, s2));
+        long value = countPaths(dp, num_paths, i - 1, j, s1, s2);
+        num_paths[i][j] += MOD(value);
     }
     if (dp[i][j] == a2) {
-        num_paths[i][j] += MOD(countPaths(dp, num_paths, i, j - 1, s1, s2));
+        long value = countPaths(dp, num_paths, i, j - 1, s1, s2);
+        num_paths[i][j] += MOD(value);
     }
     if (dp[i][j] == a3) {
-        num_paths[i][j] += MOD(countPaths(dp, num_paths, i - 1, j - 1, s1, s2));
+        long value = countPaths(dp, num_paths, i - 1, j - 1, s1, s2);
+        num_paths[i][j] += MOD(value);
     }
     return num_paths[i][j];
 }
 
 // Find score of optimal path via DP:
-vector<vector<long>> doSolveAlignment(string s1, string s2) {
-
-    // Creates DP table of appropriate size with extra row for alignments against empty strings (values pre-initialized):
-    vector<vector<long>> table = initialize_DPT(s1.length(), s2.length(), PENALTY);
+vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table) {
 
     const long matrix_rows = table.size();
     const long matrix_cols = table[0].size();
