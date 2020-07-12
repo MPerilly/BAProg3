@@ -4,27 +4,101 @@
 #include <algorithm>
 using namespace std;
 
-// Declare table of best alignments, penalties, etc.
-const long MATCH = 2;
-const long PENALTY = -1;
-
 long MOD(long l);
-long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2);
-vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table);
-vector<vector<long>> initialize_DPT(size_t l1, size_t l2, const long penalty);
-bool checkMatch(string s1, string s2, long i1, long i2);
-long solveAlignment(string s1, string s2);
 
 int main() {
-    // Testing:
+    const long MATCH = 2;
+    const long PENALTY = -1;
 
     string s1;
     string s2;
-
     cin >> s1;
     cin >> s2;
 
-    solveAlignment(s1, s2);
+    // Initialize DP Table:
+    const size_t s1len = s1.length();
+    const size_t s2len = s1.length();
+    const size_t DPTable_rows = s1len + 1;
+    const size_t DPTable_cols = s1len + 1;
+
+    static vector<vector<long>> DPTable (DPTable_rows, vector<long> (DPTable_cols, 0));
+    // Fill first column and row with proper values:
+    if (s1len == s2len){
+        for (long i = 1; i < DPTable_rows; i++) DPTable[0][i] = DPTable[i][0] = i * PENALTY;
+    }
+    else if (s1len > s2len){
+        for (long i = 1; i < DPTable_cols; i++) DPTable[0][i] = DPTable[i][0] = i * PENALTY;
+        for (long i = DPTable_cols; i < DPTable_rows; i++) DPTable[i][0] = i * PENALTY;
+    }
+    else {
+        for (long i = 1; i < DPTable_rows; i++) DPTable[0][i] = DPTable[i][0] = i * PENALTY;
+        for (long i = DPTable_rows; i < DPTable_cols; i++) DPTable[0][i] = i * PENALTY;
+    }
+
+    // Fill remaining DPTable:
+    for (long row = 1; row < DPTable_rows; row++){
+        for (long col = 1; col < DPTable_cols; col++){
+            // Initialize possible additions:
+            long diag = PENALTY;
+            long down = PENALTY;
+            long right = PENALTY;
+
+            // If there is a match, it will only be on the diagonal, so update if applicable:
+            long s1ind = row - 1;
+            long s2ind = col - 1;
+            if (!(s1[s1ind] - s2[s2ind])) diag = MATCH;
+
+            // Add to best scores of previous alignments:
+            diag += DPTable[row - 1][col - 1];
+            down += DPTable[row - 1][col];
+            right += DPTable[row][col - 1];
+
+            // Find the best score for the alignment at this cell:
+            long opt_value = max({diag, down, right});
+            // Insert the score to the table:
+            DPTable[row][col] = opt_value;
+        }
+    }
+
+    // Count number of paths:
+
+    // Initialize traceback table:
+    vector<vector<long>> traceback(DPTable_rows, vector<long>(DPTable_cols, 0));
+    traceback[0][0] = 1;
+
+    // Fill Traceback:
+    for (long row = 1; row < DPTable_rows; row++) {
+        for (long col = 1; col < DPTable_cols; col++) {
+            // Initialize optimal values:
+            long a1 = DPTable[row - 1][col] + PENALTY;
+            long a2 = DPTable[row][col - 1] + PENALTY;
+            long a3;
+
+            // Check for a match on the diagonal & adjust accordingly:
+            long s1ind = row - 1;
+            long s2ind = col - 1;
+            if (!(s1[s1ind] - s2[s2ind])) a3 = DPTable[row - 1][col - 1] + MATCH;
+            else a3 = DPTable[row - 1][col - 1] + PENALTY;
+
+            // Sum per class psuedocode:
+            if (DPTable[row][col] == a1) {
+                long value = traceback[row][col] + traceback[row - 1][col];
+                traceback[row][col] = MOD(value);
+            }
+            if (DPTable[row][col] == a2) {
+                long value = traceback[row][col] + traceback[row][col - 1];
+                traceback[row][col] = MOD(value);
+            }
+            if (DPTable[row][col] == a3) {
+                long value = traceback[row][col] + traceback[row - 1][col - 1];
+                traceback[row][col] = MOD(value);
+            }
+        }
+    }
+
+    // Print results:
+    cout << to_string(DPTable[s1len][s2len]) << endl;
+    cout << to_string(traceback[s1len][s2len]) << endl;
 
     return 0;
 }
@@ -41,109 +115,3 @@ long MOD(long l){
     return l;
 }
 
-// Wrapper function to return score of optimal path:
-long solveAlignment(string s1, string s2){
-    // Creates DP table of appropriate size with extra row for alignments against empty strings (values pre-initialized):
-    static vector<vector<long>> DPTable = initialize_DPT(s1.length(), s2.length(), PENALTY);
-    DPTable = doSolveAlignment(s1, s2, DPTable);
-    // Return optimal value
-    return DPTable[s1.length()][s2.length()];
-}
-
-long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2) {
-
-    vector<vector<long>> traceback(dp.size(), vector<long>(dp[0].size(), 0));
-    traceback[0][0] = 1;
-
-    for (long row = 1; row < i + 1; row++) {
-        for (long col = 1; col < j + 1; col++) {
-            long a1 = dp[row - 1][col] + PENALTY;
-            long a2 = dp[row][col - 1] + PENALTY;
-            long a3;
-            if (checkMatch(s1, s2, row - 1, col - 1)) a3 = dp[row - 1][col - 1] + MATCH;
-            else a3 = dp[row - 1][col - 1] + PENALTY;
-
-            if (dp[row][col] == a1) {
-                long value = traceback[row][col] + traceback[row - 1][col];
-                traceback[row][col] = MOD(value);
-            }
-            if (dp[row][col] == a2) {
-                long value = traceback[row][col] + traceback[row][col - 1];
-                traceback[row][col] = MOD(value);
-            }
-            if (dp[row][col] == a3) {
-                long value = traceback[row][col] + traceback[row - 1][col - 1];
-                traceback[row][col] = MOD(value);
-            }
-        }
-    }
-    return traceback[i][j];
-}
-
-
-// Find score of optimal path via DP:
-vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table) {
-
-    const long matrix_rows = table.size();
-    const long matrix_cols = table[0].size();
-
-    // Fill table with optimal values from initialized values:
-    for (long row = 1; row < matrix_rows; row++){
-        for (long col = 1; col < matrix_cols; col++){
-            // Initialize possible additions:
-            long diag = PENALTY;
-            long down = PENALTY;
-            long right = PENALTY;
-
-            // If there is a match, it will only be on the diagonal, so update if applicable:
-            if (checkMatch(s1, s2, row - 1, col - 1)) diag = MATCH;
-
-            // Add to best scores of previous alignments:
-            diag += table[row - 1][col - 1];
-            down += table[row - 1][col];
-            right += table[row][col - 1];
-
-            // Find the best score for the alignment at this cell:
-            long opt_value = max({diag, down, right});
-            // Insert the score to the table:
-            table[row][col] = opt_value;
-        }
-    }
-    vector<vector<long>> traceback(table.size(), vector<long>(table[0].size(), 0));
-    long num_paths = countPaths(table, traceback, matrix_rows - 1, matrix_cols - 1, s1, s2);
-    cout << to_string(table[matrix_rows - 1][matrix_cols - 1]) << std::endl;
-    cout << to_string(num_paths) << std::endl;
-    return table;
-}
-
-
-vector<vector<long>> initialize_DPT(size_t l1, size_t l2, const long penalty){
-
-    // Initializes matrix for alignment. Conditionals check length of strings and fill arrays properly for
-    // given lengths.
-
-    size_t first_array_len = l1 + 1;
-    size_t secnd_array_len = l2 + 1;
-
-    vector<vector<long>> table (first_array_len, vector<long> (secnd_array_len, 0));
-
-    if (l1 == l2){
-        for (long i = 1; i < first_array_len; i++) table[0][i] = table[i][0] = i * penalty;
-    }
-    else if (l1 > l2){
-        for (long i = 1; i < secnd_array_len; i++) table[0][i] = table[i][0] = i * penalty;
-        for (long i = secnd_array_len; i < first_array_len; i++) table[i][0] = i * penalty;
-    }
-    else {
-        for (long i = 1; i < first_array_len; i++) table[0][i] = table[i][0] = i * penalty;
-        for (long i = first_array_len; i < secnd_array_len; i++) table[0][i] = i * penalty;
-    }
-    return table;
-}
-
-bool checkMatch(string s1, string s2, long i1, long i2) {
-    // Return true if the characters at two indices are the same, false if otherwise
-    char check1 = s1[i1];
-    char check2 = s2[i2];
-    return !(check1 - check2);
-}
