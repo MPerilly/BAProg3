@@ -9,10 +9,10 @@ const long MATCH = 2;
 const long PENALTY = -1;
 
 long MOD(long l);
-long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2);
+long countPaths(vector<vector<long>>& dp, long i, long j, string& s1, string& s2);
 vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>> table);
 vector<vector<long>> initialize_DPT(size_t l1, size_t l2, const long penalty);
-bool checkMatch(string s1, string s2, long i1, long i2);
+bool checkMatch(string& s1, string& s2, long i1, long i2);
 long solveAlignment(string s1, string s2);
 
 int main() {
@@ -50,10 +50,12 @@ long solveAlignment(string s1, string s2){
     return DPTable[s1.length()][s2.length()];
 }
 
-long countPaths(vector<vector<long>>& dp, vector<vector<long>>& num_paths, long i, long j, string& s1, string& s2) {
+long countPaths(vector<vector<long>>& dp, long i, long j, string& s1, string& s2) {
 
     vector<vector<long>> traceback(dp.size(), vector<long>(dp[0].size(), 0));
-    traceback[0][0] = 1;
+    for (long i = 0; i < dp.size(); i++) traceback[i][0] = 1;
+    for (long i = 0; i < dp[0].size(); i++) traceback[0][i] = 1;
+    // traceback[0][0] = 1;
 
     for (long row = 1; row < i + 1; row++) {
         for (long col = 1; col < j + 1; col++) {
@@ -109,8 +111,7 @@ vector<vector<long>> doSolveAlignment(string s1, string s2, vector<vector<long>>
             table[row][col] = opt_value;
         }
     }
-    vector<vector<long>> traceback(table.size(), vector<long>(table[0].size(), 0));
-    long num_paths = countPaths(table, traceback, matrix_rows - 1, matrix_cols - 1, s1, s2);
+    long num_paths = countPaths(table, matrix_rows - 1, matrix_cols - 1, s1, s2);
     cout << to_string(table[matrix_rows - 1][matrix_cols - 1]) << std::endl;
     cout << to_string(num_paths) << std::endl;
     return table;
@@ -141,7 +142,7 @@ vector<vector<long>> initialize_DPT(size_t l1, size_t l2, const long penalty){
     return table;
 }
 
-bool checkMatch(string s1, string s2, long i1, long i2) {
+bool checkMatch(string& s1, string& s2, long i1, long i2) {
     // Return true if the characters at two indices are the same, false if otherwise
     char check1 = s1[i1];
     char check2 = s2[i2];
